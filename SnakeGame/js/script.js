@@ -8,11 +8,12 @@ const buttonPlay = document.querySelector(".btn-play")
 
 const audio = new Audio('./assets/audio.mp3')
 
-const size = 30
+const size = Math.round(canvasGame.width / 21)
 
-const initialPosition = { x: 300, y: 300 }
+const initialPosition = { x: (size * 10), y: (size * 10) }
 
 let snake = [initialPosition]
+let final = false;
 
 const incrementScore = () => {
     score.innerText = +score.innerText + 10
@@ -24,7 +25,7 @@ const randomNumber = (min, max) => {
 
 const randomPosition = () => {
     const number = randomNumber(0, canvasGame.width - size)
-    return Math.round(number / 30) * 30
+    return Math.round(number / size) * size
 }
 
 const food = {
@@ -35,16 +36,6 @@ const food = {
 
 let direction;
 let loopId;
-
-const drawFood = () => {
-    const { x, y, color } = food
-
-    ctxGame.shadowColor = color;
-    ctxGame.shadowBlur = 6
-    ctxGame.fillStyle = color;
-    ctxGame.fillRect(x, y, size, size)
-    ctxGame.shadowBlur = 0
-}
 
 const drawSnake = () => {
     ctxGame.fillStyle = "#ddd"
@@ -62,6 +53,10 @@ const moveSnake = () => {
     if (!direction) return
 
     const head = snake[snake.length - 1]
+
+    if (final) {
+        return
+    }
 
     if (direction == "right") {
         snake.push({ x: head.x + size, y: head.y })
@@ -86,7 +81,7 @@ const drawGrid = () => {
     ctxGame.lineWidth = 1
     ctxGame.strokeStyle = "#191919"
 
-    for (let i = 30; i < canvasGame.width; i += 30) {
+    for (let i = size; i < canvasGame.width; i += size) {
         ctxGame.beginPath();
         ctxGame.lineTo(i, 0);
         ctxGame.lineTo(i, canvasGame.width);
@@ -97,6 +92,16 @@ const drawGrid = () => {
         ctxGame.lineTo(canvasGame.width, i);
         ctxGame.stroke();
     }
+}
+
+const drawFood = () => {
+    const { x, y, color } = food
+
+    ctxGame.shadowColor = color;
+    ctxGame.shadowBlur = 6
+    ctxGame.fillStyle = color;
+    ctxGame.fillRect(x, y, size, size)
+    ctxGame.shadowBlur = 0
 }
 
 const checkEat = () => {
@@ -138,6 +143,7 @@ const checkCollision = () => {
 
 const gameOver = () => {
     direction = undefined
+    final = true
 
     menu.style.display = "flex"
     finalScore.innerText = score.innerText
@@ -147,7 +153,7 @@ const gameOver = () => {
 const gameLoop = () => {
     clearInterval(loopId)
 
-    ctxGame.clearRect(0, 0, 630, 630)
+    ctxGame.clearRect(0, 0, canvasGame.width, canvasGame.width)
     drawGrid()
     drawFood()
     moveSnake()
@@ -185,6 +191,7 @@ buttonPlay.addEventListener("click", () => {
     menu.style.display = "none"
     canvasGame.style.filter = "none"
     snake = [initialPosition]
+    final = false
     food.x = randomPosition()
     food.y = randomPosition()
 })
